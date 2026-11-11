@@ -24,7 +24,7 @@ export default async function ArchivePage() {
       <PageHeader
         eyebrow="Organisation"
         title="Archive"
-        description="Every board year SAIP has recorded here. Nothing is deleted when a term ends — the year is simply no longer the current one."
+        description="Past board years. Everything stays here when a term ends."
         meta={
           <span>
             {years.length} board year{years.length === 1 ? "" : "s"}

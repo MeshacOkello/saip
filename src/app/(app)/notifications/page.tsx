@@ -76,7 +76,7 @@ export default async function NotificationsPage({
       <PageHeader
         eyebrow="Workspace"
         title="Notifications"
-        description="What happened while you were away. Dismissing something keeps it in history rather than deleting it."
+        description="Your latest updates."
         meta={
           <>
             <span>{unread} unread</span>
@@ -114,7 +114,7 @@ export default async function NotificationsPage({
                 variant="ghost"
                 size="sm"
                 inline
-                confirm="Clear every notification? They stay in history."
+                confirm="Clear all notifications?"
               />
             </div>
           ) : null}
@@ -178,8 +178,8 @@ export default async function NotificationsPage({
 
         <aside className="min-w-0 space-y-7" aria-label="Notification settings">
           <Section
-            title="Browser notifications"
-            description="Push is sent straight from this server using its own keys — no third-party service is involved."
+            title="Notifications on this device"
+            description="Get notified about new messages, tasks and upcoming events."
           >
             <Surface>
               <PushToggle
@@ -192,7 +192,7 @@ export default async function NotificationsPage({
               <div className="mt-4 border-t border-line pt-4">
                 <ActionForm
                   action={sendTestNotificationAction}
-                  submitLabel="Send a test notification"
+                  submitLabel="Send a test"
                   variant="secondary"
                   size="sm"
                 />

@@ -36,6 +36,6 @@ export async function GET(
       },
     });
   } catch {
-    return new NextResponse("That file is missing from storage", { status: 410 });
+    return new NextResponse("That file is no longer available", { status: 410 });
   }
 }

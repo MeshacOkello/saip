@@ -23,7 +23,7 @@ export default async function BoardPage() {
       <PageHeader
         eyebrow="Organisation"
         title="Board directory"
-        description="Find the person responsible for each area of the board."
+        description="Who holds each position this year."
         meta={
           <>
             <span>{year?.label ?? "Board year not set"}</span>

@@ -116,6 +116,7 @@ function Nav({
 export function AppShell({
   items,
   name,
+  photo = null,
   subtitle,
   logo,
   attention,
@@ -123,6 +124,7 @@ export function AppShell({
 }: {
   items: NavItem[];
   name: string;
+  photo?: string | null;
   subtitle: string;
   logo: string | null;
   attention: Attention;
@@ -208,7 +210,7 @@ export function AppShell({
 
   const identity = (
     <div className="rail-identity">
-      <Avatar name={name} size={35} />
+      <Avatar name={name} size={35} src={photo} />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold">{name}</p>
         <p className="truncate text-xs text-rail-muted" title={subtitle}>
@@ -319,12 +321,15 @@ export function AppShell({
 
           <details className="menu" ref={accountMenu}>
             <summary className="bar-avatar" aria-label="Account">
-              <Avatar name={name} size={30} />
+              <Avatar name={name} size={30} src={photo} />
             </summary>
             <div className="menu-panel">
               <p className="account-name">{name}</p>
               <p className="account-role">{subtitle}</p>
               <div className="menu-divider" />
+              <Link href="/settings" className="menu-item">
+                Your profile
+              </Link>
               <Link href="/board" className="menu-item">
                 Board directory
               </Link>

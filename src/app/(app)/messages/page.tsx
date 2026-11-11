@@ -52,7 +52,7 @@ export default async function MessagesPage({
     <div className="message-placeholder space-y-7">
       <PageHeader
         title="Messages"
-        description="Pick a conversation, search everything you can see, or start something new. Direct messages and private groups stay between the people in them; channels are the board's record."
+        description="Direct messages and private groups stay between the people in them. Channels are open to the whole board."
       />
 
       <Surface>

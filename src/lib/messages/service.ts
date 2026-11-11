@@ -414,6 +414,7 @@ export async function inbox(actor: MemberContext) {
             conversationId: conversationParticipant.conversationId,
             name: user.name,
             userId: user.id,
+            image: user.image,
           })
           .from(conversationParticipant)
           .innerJoin(user, eq(user.id, conversationParticipant.userId))
@@ -425,13 +426,23 @@ export async function inbox(actor: MemberContext) {
           )
       : [];
 
-  return rows.map((row) => ({
-    ...row,
-    title:
+  return rows.map((row) => {
+    const other =
       row.type === "direct"
-        ? (others.find((o) => o.conversationId === row.id)?.name ?? "Direct message")
-        : (row.title ?? "Untitled"),
-  }));
+        ? others.find((o) => o.conversationId === row.id)
+        : undefined;
+    return {
+      ...row,
+      title:
+        row.type === "direct"
+          ? (other?.name ?? "Direct message")
+          : (row.title ?? "Untitled"),
+      // Only a direct conversation has a face: a group or channel is a place, not
+      // a person, and borrowing one member's picture for it would mislead.
+      otherUserId: other?.userId ?? null,
+      otherImage: other?.image ?? null,
+    };
+  });
 }
 
 /**
@@ -480,7 +491,7 @@ export async function conversationWithMessages(
 
   const [people, messages] = await Promise.all([
     db
-      .select({ userId: user.id, name: user.name })
+      .select({ userId: user.id, name: user.name, image: user.image })
       .from(conversationParticipant)
       .innerJoin(user, eq(user.id, conversationParticipant.userId))
       .where(eq(conversationParticipant.conversationId, conversationId)),
@@ -491,6 +502,7 @@ export async function conversationWithMessages(
         createdAt: message.createdAt,
         authorId: message.authorUserId,
         authorName: user.name,
+        authorImage: user.image,
       })
       .from(message)
       .leftJoin(user, eq(user.id, message.authorUserId))

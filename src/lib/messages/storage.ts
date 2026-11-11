@@ -77,6 +77,49 @@ export async function store(file: File) {
   return key;
 }
 
+/**
+ * Stores a file under a key chosen by the caller, for things that are not message
+ * attachments and need a predictable name — a profile picture keeps its extension
+ * so the download route can say what type it is without another column.
+ */
+export async function storeAt(key: string, file: File) {
+  if (blobConfigured) {
+    const { put } = await import("@vercel/blob");
+    await put(key, file, {
+      access: "private",
+      addRandomSuffix: false,
+      allowOverwrite: true,
+      contentType: file.type || "application/octet-stream",
+    });
+    return key;
+  }
+
+  const target = onDisk(key);
+  await mkdir(path.dirname(target), { recursive: true });
+  await writeFile(target, Buffer.from(await file.arrayBuffer()));
+  return key;
+}
+
+/** Removes a stored file. Missing is fine — the point is that it is gone. */
+export async function remove(storageKey: string) {
+  if (blobConfigured) {
+    const { del, head } = await import("@vercel/blob");
+    try {
+      const found = await head(storageKey);
+      if (found) await del(found.url);
+    } catch {
+      /* already gone */
+    }
+    return;
+  }
+  const { unlink } = await import("node:fs/promises");
+  try {
+    await unlink(onDisk(storageKey));
+  } catch {
+    /* already gone */
+  }
+}
+
 export async function read(storageKey: string): Promise<Buffer> {
   if (blobConfigured) {
     const { get } = await import("@vercel/blob");

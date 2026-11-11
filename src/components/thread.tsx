@@ -54,7 +54,7 @@ export async function Thread({
   return (
     <Section
       title="Discussion"
-      description="Anything settled here can become a task or a recorded decision — that is what keeps it out of the group chat."
+      description="Turn anything settled here into a task or a decision."
     >
       <Surface>
         <ol className="space-y-6">
@@ -135,8 +135,7 @@ export async function Thread({
                         defaultValue={m.body.slice(0, 80)}
                       />
                       <p className="text-[13px] leading-relaxed text-muted">
-                        Decisions carry into the archive. Ordinary messages are just
-                        conversation.
+                        Decisions are kept with the board’s records.
                       </p>
                     </ActionForm>
                   </div>
@@ -147,7 +146,7 @@ export async function Thread({
 
           {messages.length === 0 ? (
             <li className="text-[14px] text-muted">
-              Nothing here yet. Start the conversation where the work is.
+              No messages yet.
             </li>
           ) : null}
         </ol>
@@ -162,7 +161,7 @@ export async function Thread({
             <label className="composer-attach">
               <input type="file" name="files" multiple aria-label="Attach files" />
               <span className="composer-hint">
-                Images, PDFs and documents up to {MAX_UPLOAD_BYTES / 1024 / 1024} MB
+                Attach a file — up to {MAX_UPLOAD_BYTES / 1024 / 1024} MB
               </span>
             </label>
           </ActionForm>

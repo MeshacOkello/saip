@@ -52,7 +52,7 @@ export default async function ContactsPage({
       <PageHeader
         eyebrow="Organisation"
         title="Contacts"
-        description="Vendors, speakers, campus offices and partner groups — the knowledge that usually leaves with the board that gathered it."
+        description="Vendors, speakers, campus offices and partner groups you’ve worked with."
         meta={
           <span>
             {rows.length} contact{rows.length === 1 ? "" : "s"}
@@ -118,7 +118,7 @@ export default async function ContactsPage({
         <Editor
           id="new-contact"
           title="Add a contact"
-          description="Everyone on the board can read contacts; only people with permission can change them."
+          description="Everyone can see contacts. You need permission to change them."
         >
           <ActionForm action={createContactAction} submitLabel="Add contact">
             <div className="grid gap-4 sm:grid-cols-2">

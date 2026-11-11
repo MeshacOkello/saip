@@ -36,7 +36,7 @@ export function PushToggle({ publicKey }: { publicKey: string | null }) {
       if (!publicKey) {
         if (!cancelled) {
           setState("unsupported");
-          setDetail("Push is not configured on the server.");
+          setDetail("Notifications aren’t available yet.");
         }
         return;
       }
@@ -47,7 +47,7 @@ export function PushToggle({ publicKey }: { publicKey: string | null }) {
       ) {
         if (!cancelled) {
           setState("unsupported");
-          setDetail("This browser cannot receive push notifications.");
+          setDetail("This device can’t show notifications.");
         }
         return;
       }
@@ -101,7 +101,7 @@ export function PushToggle({ publicKey }: { publicKey: string | null }) {
       setState("on");
     } catch (error) {
       setState("failed");
-      setDetail(error instanceof Error ? error.message : "Could not turn push on.");
+      setDetail(error instanceof Error ? error.message : "Couldn’t turn notifications on. Try again.");
     }
   }
 
@@ -119,7 +119,7 @@ export function PushToggle({ publicKey }: { publicKey: string | null }) {
       setState("off");
     } catch {
       setState("failed");
-      setDetail("Could not turn push off.");
+      setDetail("Couldn’t turn notifications off. Try again.");
     }
   }
 
@@ -153,13 +153,13 @@ export function PushToggle({ publicKey }: { publicKey: string | null }) {
           {state === "working"
             ? "Working…"
             : state === "on"
-              ? "Turn off on this browser"
-              : "Turn on for this browser"}
+              ? "Turn off notifications"
+              : "Turn on notifications"}
         </Button>
         <span className="text-[13px] text-muted">
           {state === "on"
-            ? "This browser will pop up notifications even when the app is closed."
-            : "Notifications are still recorded here; the browser just stays quiet."}
+            ? "You’ll be notified even when SAIP is closed."
+            : "You’ll still see updates when you open SAIP."}
         </span>
       </div>
       {detail ? (

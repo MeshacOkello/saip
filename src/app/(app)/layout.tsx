@@ -9,6 +9,7 @@ import { inbox as notificationInbox, unreadCount } from "@/lib/notifications/ser
 import { currentBoardYear } from "@/lib/board";
 import { listTasks } from "@/lib/work/service";
 import type { Capability } from "@/lib/capabilities";
+import { avatarSrc } from "@/lib/profile/service";
 import { currentMember } from "@/lib/session";
 
 const NAV: (NavItem & { capability?: Capability })[] = [
@@ -106,6 +107,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     <AppShell
       items={items}
       name={member.name}
+      photo={avatarSrc(member)}
       subtitle={held.length > 0 ? held.join(" · ") : "Board member"}
       logo={logoSrc()}
       attention={attention}

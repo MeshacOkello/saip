@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ActionForm } from "@/components/action-form";
-import { IconArrowLeft, IconChat } from "@/components/icons";
+import { IconArrowLeft, IconChat, IconPaperclip } from "@/components/icons";
 import { Avatar, Badge, EmptyState, Field, Select } from "@/components/ui";
 import { assignableMembers } from "@/lib/board";
 import {
@@ -13,6 +13,7 @@ import {
 } from "@/lib/messages/actions";
 import { MAX_UPLOAD_BYTES } from "@/lib/messages/limits";
 import { conversationWithMessages, markRead } from "@/lib/messages/service";
+import { avatarSrc } from "@/lib/profile/service";
 import { requireMember } from "@/lib/session";
 
 const TIME = new Intl.DateTimeFormat("en-GB", {
@@ -32,6 +33,18 @@ function size(bytes: number) {
 }
 
 const dayKey = (date: Date) => date.toISOString().slice(0, 10);
+
+const RUN_GAP = 10 * 60 * 1000;
+
+/** Whether `later` is the same person carrying on, rather than a new turn. */
+function continues(
+  earlier: { authorId: string | null; createdAt: Date } | undefined,
+  later: { authorId: string | null; createdAt: Date } | undefined,
+) {
+  if (!earlier || !later) return false;
+  if (earlier.authorId !== later.authorId) return false;
+  return later.createdAt.getTime() - earlier.createdAt.getTime() < RUN_GAP;
+}
 
 export default async function ConversationPage({
   params,
@@ -53,6 +66,9 @@ export default async function ConversationPage({
   const everyone = await assignableMembers();
   const canAdd = item.type !== "direct";
   const today = dayKey(new Date());
+  // In a direct message there is only one other person; labelling every bubble
+  // with their name says nothing the page has not already said.
+  const named = item.type !== "direct";
 
   // Group by day, then collapse runs from the same author within ten minutes.
   const days: { key: string; date: Date; messages: typeof item.messages }[] = [];
@@ -80,7 +96,7 @@ export default async function ConversationPage({
           </h1>
           <p className="chat-sub">
             {item.type === "channel"
-              ? "Channel · part of the board's record"
+              ? "Channel · open to the whole board"
               : item.type === "group"
                 ? `Private group · ${item.people.length} people`
                 : "Direct message"}
@@ -89,7 +105,7 @@ export default async function ConversationPage({
         <div className="ml-auto flex shrink-0 items-center gap-2">
           <span className="badge-hide-sm">
             <Badge tone={item.isPrivate ? "neutral" : "secondary"}>
-              {item.isPrivate ? "Private" : "Kept with the board year"}
+              {item.isPrivate ? "Private" : "Open to the board"}
             </Badge>
           </span>
           <details className="menu">
@@ -134,8 +150,8 @@ export default async function ConversationPage({
                   <div className="menu-divider" />
                   <p className="menu-note">
                     {item.type === "channel"
-                      ? "Leaving only hides it from your list; the messages stay part of the record."
-                      : "Leaving removes you from the group. The others keep the conversation."}
+                      ? "This channel stays for everyone else."
+                      : "The others keep the conversation."}
                   </p>
                   <ActionForm
                     action={leaveConversationAction}
@@ -156,8 +172,8 @@ export default async function ConversationPage({
         {item.messages.length === 0 ? (
           <EmptyState icon={<IconChat />} title="No messages yet">
             {item.type === "channel"
-              ? "Anything posted here is kept for future boards."
-              : "Say something — only the people listed above can read this."}
+              ? "Start the conversation."
+              : "Only the people in this conversation can read it."}
           </EmptyState>
         ) : (
           days.map((day) => (
@@ -168,48 +184,75 @@ export default async function ConversationPage({
               <ol className="chat-messages">
                 {day.messages.map((m, index) => {
                   const previous = day.messages[index - 1];
-                  const runOn =
-                    previous?.authorId === m.authorId &&
-                    m.createdAt.getTime() - previous.createdAt.getTime() <
-                      10 * 60 * 1000;
+                  const next = day.messages[index + 1];
+                  const mine = m.authorId === member.userId;
+                  // A run is the same person talking without a long pause. The
+                  // first of a run carries the name, the last carries the face.
+                  const runOn = continues(previous, m);
+                  const endsRun = !continues(m, next);
                   return (
-                    <li key={m.id} className={runOn ? "is-runon" : ""}>
-                      <div className="chat-gutter">
-                        {runOn ? (
-                          <time dateTime={m.createdAt.toISOString()}>
+                    <li
+                      key={m.id}
+                      className={[
+                        mine ? "is-mine" : "is-theirs",
+                        runOn ? "is-runon" : "",
+                        endsRun ? "ends-run" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
+                      <span className="chat-avatar">
+                        {!mine && endsRun ? (
+                          <Avatar
+                            name={m.authorName ?? "?"}
+                            size={30}
+                            src={avatarSrc({
+                              userId: m.authorId,
+                              image: m.authorImage,
+                            })}
+                          />
+                        ) : null}
+                      </span>
+
+                      <div className="chat-stack">
+                        {!mine && !runOn && named ? (
+                          <p className="chat-author">
+                            {m.authorName ?? "Former member"}
+                          </p>
+                        ) : null}
+
+                        <div className="chat-bubble">
+                          {m.body ? <p className="chat-body">{m.body}</p> : null}
+
+                          {m.files.length > 0 ? (
+                            <ul className="chat-files">
+                              {m.files.map((f) => (
+                                <li key={f.id}>
+                                  <a
+                                    href={`/api/files/${f.id}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                  >
+                                    <IconPaperclip className="size-3.5" />
+                                    <span className="chat-file-name">
+                                      {f.filename}
+                                    </span>
+                                    <span>{size(f.byteSize)}</span>
+                                  </a>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : null}
+
+                          <time
+                            className="chat-time"
+                            dateTime={m.createdAt.toISOString()}
+                          >
                             {TIME.format(m.createdAt)}
                           </time>
-                        ) : (
-                          <Avatar name={m.authorName ?? "?"} size={32} />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        {runOn ? null : (
-                          <p className="chat-byline">
-                            <span>{m.authorName ?? "Former member"}</span>
-                            <time dateTime={m.createdAt.toISOString()}>
-                              {TIME.format(m.createdAt)}
-                            </time>
-                          </p>
-                        )}
-                        {m.body ? <p className="chat-body">{m.body}</p> : null}
-                        {m.files.length > 0 ? (
-                          <ul className="chat-files">
-                            {m.files.map((f) => (
-                              <li key={f.id}>
-                                <a
-                                  href={`/api/files/${f.id}`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                >
-                                  {f.filename}
-                                  <span>{size(f.byteSize)}</span>
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : null}
-                        {m.authorId === member.userId ? (
+                        </div>
+
+                        {mine ? (
                           <div className="chat-actions">
                             <ActionForm
                               action={deleteMessageAction}
@@ -249,7 +292,7 @@ export default async function ConversationPage({
           <label className="composer-attach">
             <input type="file" name="files" multiple aria-label="Attach files" />
             <span className="composer-hint">
-              Images, PDFs and documents up to {MAX_UPLOAD_BYTES / 1024 / 1024} MB
+              Attach a file — up to {MAX_UPLOAD_BYTES / 1024 / 1024} MB
             </span>
           </label>
         </ActionForm>

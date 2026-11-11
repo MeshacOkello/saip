@@ -328,7 +328,33 @@ export function StatusDot({ tone = "neutral" }: { tone?: Tone }) {
   );
 }
 
-export function Avatar({ name, size = 32 }: { name: string; size?: number }) {
+export function Avatar({
+  name,
+  size = 32,
+  src = null,
+}: {
+  name: string;
+  size?: number;
+  /** A picture, if the person has one. Initials stand in when they do not. */
+  src?: string | null;
+}) {
+  if (src) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={src}
+        alt=""
+        aria-hidden
+        width={size}
+        height={size}
+        loading="lazy"
+        decoding="async"
+        style={{ width: size, height: size }}
+        className="inline-block shrink-0 rounded-full bg-surface-2 object-cover"
+      />
+    );
+  }
+
   const initials = name
     .split(/\s+/)
     .slice(0, 2)
@@ -337,7 +363,7 @@ export function Avatar({ name, size = 32 }: { name: string; size?: number }) {
   return (
     <span
       aria-hidden
-      style={{ width: size, height: size, fontSize: size <= 28 ? 11 : 12 }}
+      style={{ width: size, height: size, fontSize: Math.round(size * 0.38) }}
       className="inline-flex shrink-0 items-center justify-center rounded-full bg-primary-wash font-semibold text-primary"
     >
       {initials}

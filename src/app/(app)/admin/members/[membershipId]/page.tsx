@@ -82,7 +82,7 @@ export default async function MemberPage({
       <div className="grid gap-5 lg:grid-cols-2">
         <Section
           title="Position"
-          description="Ending an appointment keeps the record. A resignation, a removal and a replacement differ only in the reason."
+          description="Record why the appointment ended. The history stays either way."
         >
           <Surface>
           {current ? (
