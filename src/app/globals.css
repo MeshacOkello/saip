@@ -1500,8 +1500,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   flex-wrap: wrap;
   gap: 0.5rem;
 }
-.avatar-picker-file,
-.avatar-picker-hint {
+.avatar-picker-file {
   color: var(--muted);
   font-size: var(--text-caption);
 }

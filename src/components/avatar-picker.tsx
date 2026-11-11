@@ -157,10 +157,6 @@ export function AvatarPicker({
           </div>
         )}
 
-        <p className="avatar-picker-hint">
-          JPEG, PNG or WebP, up to {size(maxBytes)}.
-        </p>
-
         {problem ? (
           <p role="alert" className="avatar-picker-problem">
             {problem}
