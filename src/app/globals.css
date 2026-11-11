@@ -1438,6 +1438,9 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   background: var(--bg);
   text-align: center;
 }
+.message-placeholder > * {
+  max-width: 34rem;
+}
 
 /* One screen at a time on a phone, the way a messaging app works. */
 @media (max-width: 63.999rem) {
@@ -1539,13 +1542,8 @@ html:has(.form-dialog[open]) { overflow: hidden; }
 }
 
 /* The messages index acts as the "nothing selected" pane */
-.message-placeholder {
-  max-width: 44rem;
-  margin-inline: auto;
-  padding-block: clamp(0.5rem, 2vw, 1.5rem);
-}
 .message-placeholder .page-heading {
-  font-size: clamp(1.6rem, 2.6vw, 2rem);
+  font-size: var(--text-page);
 }
 .message-placeholder .page-header {
   border-bottom: 0;
