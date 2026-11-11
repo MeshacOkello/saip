@@ -1,3 +1,10 @@
+import {
+  IconArrowRight,
+  IconCalendar,
+  IconChat,
+  IconUsers,
+} from "@/components/icons";
+import { inbox } from "@/lib/messages/service";
 import Link from "next/link";
 
 import {
@@ -40,9 +47,10 @@ const TIME = new Intl.DateTimeFormat("en-US", {
 
 export default async function DashboardPage() {
   const member = await requireMember();
-  const [year, offers] = await Promise.all([
+  const [year, offers, conversations] = await Promise.all([
     currentBoardYear(),
     pendingTransfersFor(member.membershipId),
+    inbox(member),
   ]);
   const work = year ? await dashboardFor(member.userId, year.id) : null;
   const now = new Date();
@@ -83,15 +91,87 @@ export default async function DashboardPage() {
 
   return (
     <div className="board-workspace">
-      <header className="board-workspace-header">
+      <header className="home-intro">
         <div>
-          <h1>My workspace</h1>
-          {year ? (
-            <p className="mt-1 text-sm text-muted">Board year {year.label}</p>
-          ) : null}
+          <p className="home-kicker">
+            SAIP · {year?.label ?? "Board workspace"}
+          </p>
+          <h1>{member.name.split(" ")[0]}, here’s your board.</h1>
+          <time dateTime={now.toISOString()}>{TODAY.format(now)}</time>
         </div>
-        <time dateTime={now.toISOString()}>{TODAY.format(now)}</time>
+        <IconUsers className="home-mark" />
       </header>
+      <nav className="home-actions" aria-label="Quick actions">
+        {member.capabilities.has("members.manage") ? (
+          <Link href="/admin#invite-member">
+            <IconUsers />
+            Invite officers
+            <IconArrowRight />
+          </Link>
+        ) : (
+          <Link href="/board">
+            <IconUsers />
+            Find an officer
+            <IconArrowRight />
+          </Link>
+        )}
+        <Link href="/messages#new-message">
+          <IconChat />
+          Start a conversation
+          <IconArrowRight />
+        </Link>
+        {member.capabilities.has("events.create") ? (
+          <Link href="/events#plan-event">
+            <IconCalendar />
+            Plan an event
+            <IconArrowRight />
+          </Link>
+        ) : (
+          <Link href="/events">
+            <IconCalendar />
+            Explore events
+            <IconArrowRight />
+          </Link>
+        )}
+      </nav>
+      {conversations.length ? (
+        <section
+          className="home-conversations"
+          aria-label="Recent conversations"
+        >
+          <div className="workspace-section-heading">
+            <h2>From the board</h2>
+            <Link href="/messages">Messages</Link>
+          </div>
+          {conversations.slice(0, 3).map((conversation) => (
+            <Link
+              key={conversation.id}
+              href={`/messages/${conversation.id}`}
+              className="home-conversation"
+            >
+              <IconChat />
+              <span>
+                <strong>{conversation.title}</strong>
+                <small>{conversation.preview ?? "Open conversation"}</small>
+              </span>
+              {conversation.unread > 0 ? (
+                <b>{conversation.unread} unread</b>
+              ) : (
+                <IconArrowRight />
+              )}
+            </Link>
+          ))}
+        </section>
+      ) : (
+        <div className="home-welcome">
+          <IconChat />
+          <p>
+            <strong>A shared place for the work ahead.</strong> Start a
+            conversation, bring your officers in, and keep this term’s plans
+            together.
+          </p>
+        </div>
+      )}
 
       {offers.map((offer) => (
         <Notice

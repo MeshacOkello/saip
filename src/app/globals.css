@@ -50,6 +50,27 @@
   --color-danger: var(--danger);
   --color-danger-wash: var(--danger-wash);
 
+  /* One type scale, eight steps, each with its line height.
+     Before this the app used 33 different font sizes, eleven of them between
+     0.78rem and 0.95rem — differences small enough to be invisible one at a
+     time and obvious across a page. Nothing should pick a size off this list. */
+  --text-overline: 0.6875rem;        /* 11px  labels, badges, tab bar */
+  --text-overline--line-height: 1.3;
+  --text-caption: 0.75rem;           /* 12px  meta, timestamps, hints */
+  --text-caption--line-height: 1.4;
+  --text-small: 0.8125rem;           /* 13px  secondary text */
+  --text-small--line-height: 1.5;
+  --text-body: 0.9375rem;            /* 15px  body */
+  --text-body--line-height: 1.55;
+  --text-lead: 1.0625rem;            /* 17px  intro paragraphs */
+  --text-lead--line-height: 1.5;
+  --text-title: 1.3125rem;           /* 21px  section titles */
+  --text-title--line-height: 1.3;
+  --text-page: 1.625rem;             /* 26px  page titles */
+  --text-page--line-height: 1.2;
+  --text-display: 2rem;              /* 32px  the one big number */
+  --text-display--line-height: 1.15;
+
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
@@ -64,7 +85,7 @@ html {
 body {
   background: var(--bg);
   color: var(--text);
-  font-size: 0.9375rem; /* 15px base — the old 13px was too small to read comfortably */
+  font-size: var(--text-body); /* 15px base — the old 13px was too small to read comfortably */
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
@@ -125,7 +146,7 @@ textarea {
   min-height: 5.75rem;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  font-weight: 650;
+  font-weight: 600;
   line-height: 1.3;
 }
 .rail-brand img {
@@ -145,8 +166,8 @@ textarea {
   padding: 0 0.75rem;
   margin-bottom: 0.4rem;
   color: var(--rail-muted);
-  font-size: 0.68rem;
-  font-weight: 650;
+  font-size: var(--text-overline);
+  font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -159,7 +180,7 @@ textarea {
   border-radius: 0.5rem;
   padding: 0.45rem 0.75rem;
   color: #cfddd4;
-  font-size: 0.875rem;
+  font-size: var(--text-body);
   transition: background-color 120ms;
 }
 .nav-link:hover {
@@ -184,8 +205,8 @@ textarea {
   border-radius: 1rem;
   background: #d9efde;
   color: #214534;
-  font-size: 0.72rem;
-  font-weight: 650;
+  font-size: var(--text-overline);
+  font-weight: 600;
 }
 .rail-identity {
   display: flex;
@@ -234,7 +255,7 @@ html:has(.app-drawer[open]) {
   border-bottom: 1px solid var(--line);
   background: var(--surface);
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: var(--text-small);
 }
 .bar-menu {
   width: 2.75rem;
@@ -275,7 +296,7 @@ html:has(.app-drawer[open]) {
 }
 .eyebrow {
   color: var(--primary);
-  font-size: 0.71rem;
+  font-size: var(--text-overline);
   font-weight: 700;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -336,11 +357,11 @@ html:has(.app-drawer[open]) {
   border-radius: 0.55rem;
 }
 .date-tile strong {
-  font-size: 1.15rem;
+  font-size: var(--text-lead);
   line-height: 1.1;
 }
 .date-tile span {
-  font-size: 0.63rem;
+  font-size: var(--text-overline);
   letter-spacing: 0.075em;
   text-transform: uppercase;
   font-weight: 700;
@@ -362,7 +383,7 @@ html:has(.app-drawer[open]) {
   padding: 0.3rem 0.78rem;
   color: var(--text-2);
   border-radius: 0.45rem;
-  font-size: 0.875rem;
+  font-size: var(--text-body);
 }
 .segmented a:hover,
 .segmented a[aria-current] {
@@ -371,7 +392,7 @@ html:has(.app-drawer[open]) {
 }
 .segmented a[aria-current] {
   box-shadow: var(--shadow-sm);
-  font-weight: 650;
+  font-weight: 600;
 }
 .editor {
   scroll-margin-top: 5rem;
@@ -433,7 +454,7 @@ html:has(.app-drawer[open]) {
   .responsive-table td:not(:first-child) .table-mobile-label {
     display: block;
     color: var(--muted);
-    font-size: 0.7rem;
+    font-size: var(--text-overline);
     font-weight: 600;
     margin-bottom: 0.15rem;
   }
@@ -484,7 +505,7 @@ html:has(.app-drawer[open]) {
   input:not([type]),
   textarea,
   select {
-    font-size: 1rem;
+    font-size: var(--text-body);
   }
 }
 
@@ -502,13 +523,13 @@ html:has(.app-drawer[open]) {
   padding-bottom: 1.25rem;
 }
 .board-workspace-header h1 {
-  font-size: 1.75rem;
-  font-weight: 650;
+  font-size: var(--text-page);
+  font-weight: 600;
   letter-spacing: -0.04em;
 }
 .board-workspace-header > time {
   color: var(--muted);
-  font-size: 0.875rem;
+  font-size: var(--text-body);
 }
 .board-workspace-columns {
   display: grid;
@@ -525,13 +546,13 @@ html:has(.app-drawer[open]) {
   padding-bottom: 0.625rem;
 }
 .workspace-section-heading h2 {
-  font-size: 0.9375rem;
-  font-weight: 650;
+  font-size: var(--text-body);
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 .workspace-section-heading a {
   color: var(--muted);
-  font-size: 0.8125rem;
+  font-size: var(--text-small);
 }
 .workspace-list > li,
 .workspace-empty {
@@ -565,7 +586,7 @@ html:has(.app-drawer[open]) {
 .workspace-date,
 .workspace-empty {
   color: var(--muted);
-  font-size: 0.8125rem;
+  font-size: var(--text-small);
 }
 .workspace-date {
   padding-top: 0.125rem;
@@ -575,7 +596,7 @@ html:has(.app-drawer[open]) {
   padding: 0.875rem 0;
 }
 .workspace-empty a {
-  font-weight: 550;
+  font-weight: 500;
   color: var(--primary);
 }
 @media (min-width: 74rem) {
@@ -593,12 +614,12 @@ html:has(.app-drawer[open]) {
   }
 }
 
-.page-heading { font-family: var(--font-geist-sans), sans-serif; font-size: clamp(1.5rem, 2.3vw, 2rem); font-weight: 650; letter-spacing: -.035em; }
+.page-heading { font-family: var(--font-geist-sans), sans-serif; font-size: clamp(1.5rem, 2.3vw, 2rem); font-weight: 600; letter-spacing: -.035em; }
 .page-header .eyebrow { display: none; }
 .form-dialog { position: fixed; inset: 0; margin: auto; width: min(38rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); overflow-y: auto; border: 1px solid var(--line); border-radius: .8rem; background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
 .form-dialog::backdrop { background: #15271e80; }
 html:has(.form-dialog[open]) { overflow: hidden; }
-.editor-trigger { display: inline-flex; align-items: center; gap: .5rem; min-height: 2.75rem; padding: .5rem .75rem; font-size: .875rem; font-weight: 550; color: var(--primary); border-radius: .5rem; }
+.editor-trigger { display: inline-flex; align-items: center; gap: .5rem; min-height: 2.75rem; padding: .5rem .75rem; font-size: var(--text-body); font-weight: 500; color: var(--primary); border-radius: .5rem; }
 .editor-trigger:hover { background: var(--primary-wash); }
 .workspace-grid:has(> aside .dialog-editor) { grid-template-columns: minmax(0, 1fr); }
 .workspace-grid > aside:has(.dialog-editor) { display: flex; flex-wrap: wrap; gap: .5rem; }
@@ -608,7 +629,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
 .message-main { min-width: 0; padding: 1.25rem; }
 .message-main .shadow-card { box-shadow: none; }
 .message-main .page-header { padding-bottom: 1rem; }
-.message-main .page-heading { font-size: 1.35rem; }
+.message-main .page-heading { font-size: var(--text-title); }
 @media (max-width: 63.999rem) {
  .message-workspace { grid-template-columns: minmax(0, 1fr); }
  .message-navigation { border-right: 0; }
@@ -665,7 +686,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   justify-content: space-between;
   gap: 1rem;
   padding: 0.7rem 1.25rem;
-  font-size: 0.9rem;
+  font-size: var(--text-body);
 }
 .fact-list > div + div {
   border-top: 1px solid var(--line);
@@ -674,7 +695,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   color: var(--muted);
 }
 .fact-list dd {
-  font-weight: 550;
+  font-weight: 500;
   text-align: right;
 }
 
@@ -689,7 +710,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   gap: 0.75rem;
   align-items: baseline;
   padding: 0.5rem 0;
-  font-size: 0.95rem;
+  font-size: var(--text-body);
 }
 .agenda-preview--read {
   margin-top: 0;
@@ -705,8 +726,8 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   border-radius: 0.4rem;
   background: var(--primary-wash);
   color: var(--primary);
-  font-size: 0.75rem;
-  font-weight: 650;
+  font-size: var(--text-caption);
+  font-weight: 600;
 }
 .attendance-list li {
   display: flex;
@@ -714,7 +735,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.55rem 1rem;
-  font-size: 0.9rem;
+  font-size: var(--text-body);
 }
 .attendance-list li + li {
   border-top: 1px solid var(--line);
@@ -733,7 +754,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
 }
 .decision-date {
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: var(--text-small);
   font-variant-numeric: tabular-nums;
 }
 @media (max-width: 40rem) {
@@ -758,7 +779,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
 }
 .task-filters select {
   height: 2.45rem;
-  font-size: 0.85rem;
+  font-size: var(--text-small);
   min-width: 8.5rem;
 }
 .filter-apply {
@@ -767,8 +788,8 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   border-radius: 0.5rem;
   background: var(--surface-2);
   color: var(--text-2);
-  font-size: 0.85rem;
-  font-weight: 550;
+  font-size: var(--text-small);
+  font-weight: 500;
 }
 .filter-apply:hover {
   background: var(--line);
@@ -779,8 +800,8 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   border-radius: 0.75rem;
   background: var(--warn-wash);
   color: var(--warn);
-  font-size: 0.72rem;
-  font-weight: 650;
+  font-size: var(--text-overline);
+  font-weight: 600;
 }
 .task-list li {
   display: flex;
@@ -807,7 +828,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.95rem;
+  font-size: var(--text-body);
 }
 .task-title.is-done {
   color: var(--muted);
@@ -819,7 +840,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   border-radius: 0.3rem;
   background: var(--surface-2);
   color: var(--muted);
-  font-size: 0.75rem;
+  font-size: var(--text-caption);
 }
 .task-meta {
   display: flex;
@@ -877,15 +898,15 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   color: var(--text);
 }
 .chat-title {
-  font-size: 1.05rem;
-  font-weight: 650;
+  font-size: var(--text-lead);
+  font-weight: 600;
   letter-spacing: -0.01em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .chat-sub {
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
   color: var(--muted);
 }
 .chat-scroll {
@@ -900,7 +921,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   gap: 0.75rem;
   margin: 0.9rem 0 0.6rem;
   color: var(--muted);
-  font-size: 0.75rem;
+  font-size: var(--text-caption);
 }
 .chat-day::before,
 .chat-day::after {
@@ -927,7 +948,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   place-items: center;
   padding-top: 0.15rem;
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: var(--text-overline);
   font-variant-numeric: tabular-nums;
 }
 .chat-messages li.is-runon .chat-gutter time {
@@ -940,17 +961,17 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
-  font-size: 0.86rem;
+  font-size: var(--text-body);
 }
 .chat-byline span {
-  font-weight: 650;
+  font-weight: 600;
 }
 .chat-byline time {
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: var(--text-overline);
 }
 .chat-body {
-  font-size: 0.95rem;
+  font-size: var(--text-body);
   line-height: 1.55;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -969,7 +990,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   border: 1px solid var(--line);
   border-radius: 0.45rem;
   background: var(--surface);
-  font-size: 0.82rem;
+  font-size: var(--text-small);
 }
 .chat-files a:hover {
   border-color: var(--primary);
@@ -977,7 +998,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
 }
 .chat-files span {
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: var(--text-overline);
 }
 .chat-actions {
   opacity: 0;
@@ -1009,7 +1030,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   border-radius: 0.6rem;
   background: var(--surface);
   font: inherit;
-  font-size: 0.95rem;
+  font-size: var(--text-body);
 }
 .composer-input:focus {
   outline: 2px solid var(--primary);
@@ -1021,12 +1042,12 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
   color: var(--muted);
 }
 .composer-attach input[type="file"] {
   max-width: 14rem;
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
 }
 .chat-composer form > div:last-child {
   justify-self: start;
@@ -1044,7 +1065,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   border: 1px solid var(--line);
   border-radius: 0.5rem;
   color: var(--text-2);
-  font-size: 0.82rem;
+  font-size: var(--text-small);
   cursor: pointer;
   list-style: none;
 }
@@ -1069,8 +1090,8 @@ html:has(.form-dialog[open]) { overflow: hidden; }
 .menu-heading {
   margin-bottom: 0.5rem;
   color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 650;
+  font-size: var(--text-overline);
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -1079,7 +1100,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   align-items: center;
   gap: 0.5rem;
   padding: 0.2rem 0;
-  font-size: 0.87rem;
+  font-size: var(--text-body);
 }
 .menu-divider {
   height: 1px;
@@ -1089,7 +1110,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
 .menu-note {
   margin-bottom: 0.6rem;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
   line-height: 1.5;
 }
 .message-main:has(.chat) {
@@ -1151,19 +1172,19 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   align-items: center;
   gap: 0.5rem;
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: var(--text-small);
 }
 .balance-figure {
   margin-top: 0.4rem;
   font-size: clamp(1.35rem, 2.2vw, 1.7rem);
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 .balance-note {
   margin-top: 0.35rem;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
   line-height: 1.45;
 }
 .ledger li {
@@ -1181,13 +1202,13 @@ html:has(.form-dialog[open]) { overflow: hidden; }
 }
 .ledger-title {
   display: block;
-  font-size: 0.92rem;
+  font-size: var(--text-body);
   overflow-wrap: anywhere;
 }
 .ledger-sub {
   display: block;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
 }
 .ledger-amount {
   font-variant-numeric: tabular-nums;
@@ -1211,12 +1232,12 @@ html:has(.form-dialog[open]) { overflow: hidden; }
 }
 .claim-sub {
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: var(--text-small);
 }
 .claim-amount {
   margin-left: auto;
   font-variant-numeric: tabular-nums;
-  font-weight: 650;
+  font-weight: 600;
 }
 .claim-chain {
   display: flex;
@@ -1239,7 +1260,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
 }
 .claim-waiting {
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: var(--text-small);
 }
 
 /* Header menus: notifications and account */
@@ -1270,7 +1291,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   border-radius: 1rem;
   background: var(--primary);
   color: #fff;
-  font-size: 0.65rem;
+  font-size: var(--text-overline);
   font-weight: 700;
   line-height: 1.05rem;
   text-align: center;
@@ -1296,7 +1317,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
 .attention-list a {
   display: block;
   padding: 0.55rem 0;
-  font-size: 0.87rem;
+  font-size: var(--text-body);
   line-height: 1.45;
 }
 .attention-list a:hover {
@@ -1305,17 +1326,17 @@ html:has(.form-dialog[open]) { overflow: hidden; }
 .attention-kind {
   display: block;
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: var(--text-overline);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .account-name {
-  font-weight: 650;
+  font-weight: 600;
 }
 .account-role {
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: var(--text-small);
 }
 .menu-item {
   display: block;
@@ -1324,7 +1345,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   margin-inline: -0.55rem;
   border-radius: 0.4rem;
   text-align: left;
-  font-size: 0.88rem;
+  font-size: var(--text-body);
 }
 .menu-item:hover {
   background: var(--surface-2);
@@ -1400,12 +1421,12 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   box-shadow: var(--shadow);
 }
 .contact-name {
-  font-weight: 650;
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
 .contact-org {
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: var(--text-small);
 }
 .contact-notes {
   display: -webkit-box;
@@ -1413,13 +1434,13 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   -webkit-box-orient: vertical;
   overflow: hidden;
   color: var(--text-2);
-  font-size: 0.87rem;
+  font-size: var(--text-body);
   line-height: 1.5;
 }
 .contact-foot {
   margin-top: auto;
   color: var(--muted);
-  font-size: 0.76rem;
+  font-size: var(--text-caption);
 }
 
 /* Agenda items as a working document */
@@ -1445,7 +1466,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   align-items: center;
   gap: 0.5rem;
   padding: 0.3rem 0;
-  font-size: 0.9rem;
+  font-size: var(--text-body);
 }
 .agenda-add {
   margin-top: 0.7rem;
@@ -1455,13 +1476,13 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   display: block;
   margin-top: 0.35rem;
   color: var(--text-2);
-  font-size: 0.82rem;
+  font-size: var(--text-small);
   line-height: 1.5;
 }
 .archive-retro em {
   color: var(--muted);
   font-style: normal;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 /* Handover packets */
@@ -1476,19 +1497,19 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   display: flex;
   align-items: baseline;
   gap: 0.4rem;
-  font-size: 0.86rem;
+  font-size: var(--text-body);
 }
 .packet-stats dt {
   color: var(--muted);
 }
 .packet-stats dd {
-  font-weight: 650;
+  font-weight: 600;
 }
 .packet-heading {
   margin-top: 0.9rem;
   margin-bottom: 0.3rem;
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: var(--text-overline);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1500,7 +1521,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   justify-content: space-between;
   gap: 0.3rem 1rem;
   padding: 0.3rem 0;
-  font-size: 0.88rem;
+  font-size: var(--text-body);
 }
 .packet-list li + li {
   border-top: 1px solid var(--line);
@@ -1510,7 +1531,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
 }
 .packet-list li > span:last-child {
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: var(--text-small);
 }
 
 /* Printing: drop the chrome and let the content fill the page. */
@@ -1580,18 +1601,18 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   flex: 1;
 }
 .notification-title {
-  font-size: 0.93rem;
-  font-weight: 550;
+  font-size: var(--text-body);
+  font-weight: 500;
   overflow-wrap: anywhere;
 }
 .notification-body {
   color: var(--text-2);
-  font-size: 0.85rem;
+  font-size: var(--text-small);
   overflow-wrap: anywhere;
 }
 .notification-when {
   color: var(--muted);
-  font-size: 0.75rem;
+  font-size: var(--text-caption);
 }
 .notification-main:hover .notification-title {
   color: var(--primary);
@@ -1619,7 +1640,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   background: var(--rail);
   color: var(--rail-ink);
   box-shadow: var(--shadow);
-  font-size: 0.88rem;
+  font-size: var(--text-body);
 }
 .update-prompt > div {
   display: flex;
@@ -1632,8 +1653,8 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   border-radius: 0.5rem;
   background: #fff;
   color: var(--rail);
-  font-size: 0.85rem;
-  font-weight: 650;
+  font-size: var(--text-small);
+  font-weight: 600;
 }
 .update-prompt button.is-quiet {
   background: transparent;
@@ -1732,7 +1753,7 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   border-radius: 0.8rem;
   padding: 0.3rem 0.2rem;
   color: var(--muted);
-  font-size: 0.6875rem;
+  font-size: var(--text-overline);
   font-weight: 600;
   letter-spacing: 0.005em;
   transition:
@@ -1780,10 +1801,10 @@ html:has(.form-dialog[open]) { overflow: hidden; }
     padding-bottom: 0.1rem;
   }
   .board-workspace-header h1 {
-    font-size: 1.5rem;
+    font-size: var(--text-page);
   }
   .board-workspace-header > time {
-    font-size: 0.8125rem;
+    font-size: var(--text-small);
   }
   .board-workspace-columns {
     gap: 1.1rem;
@@ -1816,3 +1837,41 @@ html:has(.form-dialog[open]) { overflow: hidden; }
     padding-top: env(safe-area-inset-top);
   }
 }
+
+/* SAIP's shared workspace surfaces and mobile-first home. */
+:root { --bg: #edf1ed; --surface-2: #e5ece6; --line: #d3ded5; --primary: #205c43; --primary-wash: #d8ebe0; }
+.home-intro { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1.75rem; border-radius:1.25rem; color:#f1f8f2; background:#193e30; overflow:hidden; }
+.home-kicker { font-size:.75rem; letter-spacing:.12em; text-transform:uppercase; color:#bdd6c5; font-weight:600; }
+.home-intro h1 { max-width:20ch; margin:.65rem 0; font-size:clamp(1.75rem,3vw,2.6rem); font-weight:600; letter-spacing:-.045em; }
+.home-intro time { color:#c6dbce; font-size:.8125rem; }
+.home-mark { width:7rem; height:7rem; color:#b7d6c1; flex-shrink:0; }
+.home-actions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem; }
+.home-actions a { display:flex; align-items:center; gap:.65rem; min-height:4rem; padding:1rem; border:1px solid var(--line); border-radius:.75rem; background:var(--surface); font-size:.875rem; font-weight:550; transition:background .15s; }
+.home-actions a:hover { background:var(--primary-wash); }
+.home-actions a > svg:last-child { margin-left:auto; }
+.home-welcome { display:flex; gap:1rem; align-items:center; border-left:3px solid #75a78b; padding:.6rem 1rem; font-size:.875rem; color:var(--muted); }
+.home-welcome strong { display:block; color:var(--text); font-weight:600; }
+.home-conversations { padding:1rem 1.25rem; border-radius:.8rem; background:var(--surface); }
+.home-conversation { display:flex; align-items:center; gap:.75rem; padding:.8rem 0; border-bottom:1px solid var(--line); }
+.home-conversation:last-child { border-bottom:0; }
+.home-conversation > span { min-width:0; flex:1; }
+.home-conversation strong { display:block; font-size:.875rem; font-weight:600; }
+.home-conversation small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); }
+.home-conversation b { font-size:.75rem; color:var(--primary); }
+.board-workspace-columns { padding:1.25rem; background:var(--surface); border:1px solid var(--line); border-radius:1rem; }
+.page-header { border-bottom:0; padding-bottom:0; }
+.page-heading { font-size:clamp(1.5rem,2.5vw,2rem); }
+.message-workspace { box-shadow:0 8px 28px #193e3008; }
+.date-tile { background:#d8ebe0; border-radius:.5rem; }
+@media(max-width:639px) {
+ .home-intro { padding:1.25rem; border-radius:1rem; }
+ .home-mark { width:4rem; height:4rem; }
+ .home-actions { grid-template-columns:1fr; gap:.4rem; }
+ .home-actions a { min-height:3rem; padding:.65rem .85rem; }
+ .board-workspace { gap:1.15rem; }
+ .board-workspace-columns { padding:1rem; gap:1.5rem; }
+ .home-welcome { font-size:.8125rem; }
+ .app-bar .bar-menu { display:none; }
+}
+.board-workspace-columns > section { background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0; }
+.home-actions a, .home-conversation { -webkit-tap-highlight-color: transparent; }

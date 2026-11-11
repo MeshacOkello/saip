@@ -250,19 +250,11 @@ export function AppShell({
 
       <div className="min-w-0 flex-1">
         <header className="app-bar">
-          <button
-            type="button"
-            aria-label="Open menu"
-            aria-haspopup="dialog"
-            aria-controls="board-menu"
-            onClick={() => drawer.current?.showModal()}
-            className="bar-menu lg:hidden"
-          >
-            <IconMenu />
-          </button>
           <div className="flex min-w-0 flex-1 items-center gap-2.5">
             <span className="truncate font-semibold text-ink">
-              {current?.label ?? "SAIP Board"}
+              {pathname === "/dashboard"
+                ? "SAIP Board"
+                : (current?.label ?? "SAIP Board")}
             </span>
           </div>
           <form action="/messages" className="hidden sm:block">
@@ -293,8 +285,8 @@ export function AppShell({
               <p className="menu-heading">Needs you</p>
               {attentionCount === 0 ? (
                 <p className="menu-note">
-                  Nothing is waiting. Messages, mentions, tasks handed to you and
-                  movement on your reimbursements show up here.
+                  Nothing is waiting. Messages, mentions, tasks handed to you
+                  and movement on your reimbursements show up here.
                 </p>
               ) : (
                 <ul className="attention-list">
@@ -396,9 +388,7 @@ export function AppShell({
         <nav className="tab-bar" aria-label="Main sections">
           {items
             .filter((item) => TAB_BAR.includes(item.href))
-            .sort(
-              (a, b) => TAB_BAR.indexOf(a.href) - TAB_BAR.indexOf(b.href),
-            )
+            .sort((a, b) => TAB_BAR.indexOf(a.href) - TAB_BAR.indexOf(b.href))
             .map((item) => {
               const Icon = ICONS[item.icon as keyof typeof ICONS] ?? IconHome;
               const active = isActive(pathname, item.href);
