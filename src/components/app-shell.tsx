@@ -393,7 +393,7 @@ export function AppShell({
           {children}
         </main>
 
-        <nav className="tab-bar lg:hidden" aria-label="Main sections">
+        <nav className="tab-bar" aria-label="Main sections">
           {items
             .filter((item) => TAB_BAR.includes(item.href))
             .sort(
