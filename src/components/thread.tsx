@@ -6,6 +6,7 @@ import {
   taskFromMessageAction,
 } from "@/lib/work/actions";
 import { MAX_UPLOAD_BYTES } from "@/lib/messages/limits";
+import { avatarSrc } from "@/lib/profile/service";
 import { ensureThread, messagesIn } from "@/lib/work/service";
 
 function fileSize(bytes: number) {
@@ -60,7 +61,11 @@ export async function Thread({
         <ol className="space-y-6">
           {messages.map((m) => (
             <li key={m.id} className="flex gap-3.5">
-              <Avatar name={m.authorName ?? "?"} size={32} />
+              <Avatar
+                name={m.authorName ?? "?"}
+                size={32}
+                src={avatarSrc({ userId: m.authorId, image: m.authorImage })}
+              />
               <div className="min-w-0 flex-1">
                 <p className="text-[13px] text-muted">
                   <span className="font-medium text-ink">

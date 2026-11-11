@@ -8,6 +8,7 @@ import {
   Surface,
 } from "@/components/ui";
 import { currentBoardYear, roster } from "@/lib/board";
+import { avatarSrc } from "@/lib/profile/service";
 import { requireMember } from "@/lib/session";
 
 export const metadata = { title: "Board directory · SAIP Board" };
@@ -46,7 +47,14 @@ export default async function BoardPage() {
                 >
                   <div className="flex min-w-0 items-center gap-3.5">
                     {seat.holderName ? (
-                      <Avatar name={seat.holderName} size={44} />
+                      <Avatar
+                        name={seat.holderName}
+                        size={44}
+                        src={avatarSrc({
+                          userId: seat.holderId,
+                          image: seat.holderImage,
+                        })}
+                      />
                     ) : (
                       <span className="inline-grid size-11 shrink-0 place-items-center rounded-full bg-surface-2 text-muted">
                         <IconUsers />

@@ -710,6 +710,7 @@ export async function messagesIn(conversationId: string) {
       createdAt: message.createdAt,
       editedAt: message.editedAt,
       authorName: user.name,
+      authorImage: user.image,
       authorId: user.id,
     })
     .from(message)

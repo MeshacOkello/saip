@@ -33,6 +33,7 @@ import {
   MIN_ADMINS,
   isCapability,
 } from "@/lib/capabilities";
+import { avatarSrc } from "@/lib/profile/service";
 import { requireMember } from "@/lib/session";
 
 import {
@@ -106,7 +107,11 @@ export default async function AdminMembersPage() {
                   >
                     <Cell>
                       <span className="flex items-center gap-3">
-                        <Avatar name={m.name} size={32} />
+                        <Avatar
+                          name={m.name}
+                          size={32}
+                          src={avatarSrc({ userId: m.userId, image: m.image })}
+                        />
                         <span className="min-w-0">
                           <Link
                             href={`/admin/members/${m.membershipId}`}
