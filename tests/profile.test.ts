@@ -101,6 +101,22 @@ describe("a member's own photo", () => {
   });
 });
 
+describe("the request has to be able to carry the file", () => {
+  it("allows a body larger than the biggest photo we accept", async () => {
+    // The bug this guards: MAX_AVATAR_BYTES was 2 MB while Server Actions
+    // rejected anything over 1 MB by default. The framework returned a bare 413
+    // before any validation here ran, and the page died with it. A limit the
+    // request cannot carry is not a limit, it is a trap.
+    const config = await import("../next.config");
+    const limit = config.default.experimental?.serverActions?.bodySizeLimit;
+    expect(limit).toBeDefined();
+
+    const mb = Number(String(limit).replace(/mb$/i, ""));
+    expect(Number.isNaN(mb)).toBe(false);
+    expect(mb * 1024 * 1024).toBeGreaterThan(MAX_AVATAR_BYTES);
+  });
+});
+
 describe("what it refuses", () => {
   it("refuses a file that is not one of the three image formats", async () => {
     const me = await member("Photo Bad Type");
