@@ -28,12 +28,32 @@ const blobConfigured = Boolean(
 export const UPLOAD_DIR =
   process.env.UPLOAD_DIR ?? path.join(process.cwd(), "var", "uploads");
 
-/** Which backend is in use, for the deployment check page to report honestly. */
+/** Which backend is in use, for a deployment check to report honestly. */
 export const storageBackend = blobConfigured ? "vercel-blob" : "local-disk";
 
 /** The stored name is generated here; a client-supplied filename never reaches storage. */
 function newKey() {
   return `${new Date().toISOString().slice(0, 7)}/${randomUUID()}`;
+}
+
+/**
+ * Resolves a storage key to a path under the upload directory, and refuses anything
+ * that climbs out of it — a traversal in a stored key, however it got there.
+ *
+ * The `turbopackIgnore` comments are not a weakening of that check, which happens at
+ * runtime regardless. They tell the bundler to stop trying to follow a path it cannot
+ * know: `UPLOAD_DIR` is read from the environment, so static analysis gives up and
+ * traces the entire project into the serverless bundle, which first bloats the
+ * function and then fails the build outright while collecting page data. The bundler
+ * is right that it cannot resolve this; it is simply not something it needs to.
+ */
+function onDisk(storageKey: string) {
+  const root = path.resolve(/*turbopackIgnore: true*/ UPLOAD_DIR);
+  const target = path.resolve(/*turbopackIgnore: true*/ root, storageKey);
+  if (target !== root && !target.startsWith(root + path.sep)) {
+    throw new Error("Refusing to touch anything outside the upload directory.");
+  }
+  return target;
 }
 
 export async function store(file: File) {
@@ -51,7 +71,7 @@ export async function store(file: File) {
     return key;
   }
 
-  const target = path.join(UPLOAD_DIR, key);
+  const target = onDisk(key);
   await mkdir(path.dirname(target), { recursive: true });
   await writeFile(target, Buffer.from(await file.arrayBuffer()));
   return key;
@@ -69,10 +89,5 @@ export async function read(storageKey: string): Promise<Buffer> {
     return Buffer.from(await new Response(result.stream).arrayBuffer());
   }
 
-  // Defend against a traversal in a stored key, however it got there.
-  const target = path.resolve(UPLOAD_DIR, storageKey);
-  if (!target.startsWith(path.resolve(UPLOAD_DIR))) {
-    throw new Error("Refusing to read outside the upload directory.");
-  }
-  return readFile(target);
+  return readFile(onDisk(storageKey));
 }
