@@ -10,7 +10,15 @@
  * offline page are kept.
  */
 
-const VERSION = "saip-v3";
+/*
+ * Bump this whenever anything in PRECACHE changes.
+ *
+ * The precache is filled once, at install. An installed copy keeps serving the
+ * version it already has, so editing offline.html without changing this number
+ * means the old page is what people actually see — which is exactly what
+ * happened to the offline copy rewritten in the previous commit.
+ */
+const VERSION = "saip-v4";
 const SHELL = `${VERSION}-shell`;
 const ASSETS = `${VERSION}-assets`;
 
