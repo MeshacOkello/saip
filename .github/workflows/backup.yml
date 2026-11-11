@@ -1,19 +1,19 @@
-# Weekly database backup to S3-compatible object storage.
+# Weekly database backup into the project's Vercel Blob store.
 #
-# Neon's free restore window is six hours, which covers a migration you regret the
-# same morning and nothing else. This takes a copy the board keeps itself, in a
-# different system, so that losing the database account does not mean losing the
-# records.
+# Neon's free plan keeps a six-hour restore window. That covers a migration somebody
+# regrets the same morning and nothing else: not a mistake found in April, not a
+# provider closing an account, not a board deciding to leave. This takes a copy SAIP
+# keeps itself.
 #
-# Needs five repository secrets:
-#   DATABASE_URL           the Neon connection string
-#   S3_ENDPOINT            e.g. https://<account>.r2.cloudflarestorage.com
-#   S3_BUCKET              the bucket holding attachments; dumps go under backups/
-#   S3_ACCESS_KEY_ID
-#   S3_SECRET_ACCESS_KEY
+# It writes to the same private Blob store as the attachments, under backups/, so the
+# whole deployment stays inside one account with one bill of nothing.
 #
-# Run it by hand once after setting them. A schedule nobody has ever seen succeed is
-# not a backup.
+# Two repository secrets are needed:
+#   DATABASE_URL           the Neon connection string (the unpooled one is fine)
+#   BLOB_READ_WRITE_TOKEN  from the project's Blob store
+#
+# Run it once by hand after setting them. A schedule nobody has ever watched succeed
+# is not a backup. Then practise a restore, on purpose, while nothing is wrong.
 name: Database backup
 
 on:
@@ -31,7 +31,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Install a matching PostgreSQL client
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Install a PostgreSQL client matching the server
         run: |
           sudo install -d /usr/share/postgresql-common/pgdg
           sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
@@ -40,7 +46,7 @@ jobs:
             https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
             | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
           sudo apt-get update -qq
-          sudo apt-get install -y -qq postgresql-client-17
+          sudo apt-get install -y -qq postgresql-client-18
 
       - name: Dump
         env:
@@ -54,45 +60,60 @@ jobs:
             --file="saip-$stamp.dump" "$DATABASE_URL"
           ls -lh "saip-$stamp.dump"
 
-      - name: Refuse to upload an empty dump
+      - name: Refuse to upload an implausibly small dump
         run: |
           size=$(stat -c%s "saip-${{ env.stamp }}.dump")
           echo "dump is $size bytes"
           # A real dump of this schema is tens of kilobytes even with no records in it.
-          test "$size" -gt 20000 || { echo "Dump is implausibly small; not uploading."; exit 1; }
+          # Uploading a truncated one over a good backup is worse than failing loudly.
+          test "$size" -gt 20000 || { echo "Too small to be a real dump; not uploading."; exit 1; }
 
-      - name: Upload
+      - name: Upload to the Blob store, and keep the last twelve
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: auto
-          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
-          AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+          STAMP: ${{ env.stamp }}
         run: |
-          aws s3 cp "saip-${{ env.stamp }}.dump" \
-            "s3://${{ secrets.S3_BUCKET }}/backups/saip-${{ env.stamp }}.dump" \
-            --endpoint-url "${{ secrets.S3_ENDPOINT }}"
+          test -n "$BLOB_READ_WRITE_TOKEN" || { echo "BLOB_READ_WRITE_TOKEN is not set"; exit 1; }
+          npm install --no-save @vercel/blob@2.9.0 > /dev/null
+          node --input-type=module <<'JS'
+          import { readFile } from "node:fs/promises";
+          import { put, list, del } from "@vercel/blob";
 
-      - name: Keep the last twelve
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: auto
-        run: |
-          aws s3 ls "s3://${{ secrets.S3_BUCKET }}/backups/" \
-            --endpoint-url "${{ secrets.S3_ENDPOINT }}" \
-            | awk '{print $4}' | grep '^saip-.*\.dump$' | sort \
-            | head -n -12 > old.txt || true
-          while read -r name; do
-            [ -n "$name" ] || continue
-            echo "removing $name"
-            aws s3 rm "s3://${{ secrets.S3_BUCKET }}/backups/$name" \
-              --endpoint-url "${{ secrets.S3_ENDPOINT }}"
-          done < old.txt
+          const stamp = process.env.STAMP;
+          const name = `backups/saip-${stamp}.dump`;
+          const bytes = await readFile(`saip-${stamp}.dump`);
+
+          await put(name, bytes, {
+            access: "private",
+            addRandomSuffix: false,
+            contentType: "application/octet-stream",
+          });
+          console.log(`uploaded ${name} (${bytes.length} bytes)`);
+
+          // Retention. Sorted by pathname, which sorts by date because the stamp is
+          // ISO-8601 — the one good reason to put a timestamp in a filename.
+          const { blobs } = await list({ prefix: "backups/" });
+          const dumps = blobs
+            .filter((b) => b.pathname.endsWith(".dump"))
+            .sort((a, b) => a.pathname.localeCompare(b.pathname));
+
+          const stale = dumps.slice(0, Math.max(0, dumps.length - 12));
+          for (const old of stale) {
+            await del(old.url);
+            console.log(`removed ${old.pathname}`);
+          }
+          console.log(`${dumps.length - stale.length} backups kept`);
+          JS
 
       - name: Say what happened
         run: |
-          echo "### Backup taken" >> "$GITHUB_STEP_SUMMARY"
-          echo "\`saip-${{ env.stamp }}.dump\` uploaded to \`backups/\`." >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Restore with: \`pg_restore --clean --no-owner -d \"\$TARGET_URL\" saip-….dump\`" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### Backup taken"
+            echo
+            echo "\`backups/saip-${{ env.stamp }}.dump\` is in the Blob store."
+            echo
+            echo "Restore into a fresh Neon branch with:"
+            echo '```'
+            echo 'pg_restore --clean --no-owner -d "$TARGET_URL" saip-….dump'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

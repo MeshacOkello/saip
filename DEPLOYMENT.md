@@ -4,71 +4,88 @@ Written November 2026. Every allowance below is a vendor's published free tier, 
 those change; the figures are what to check rather than what to trust. Where a number
 decides something, the guide says what to do if it has moved.
 
-## The one architectural decision
+## What is actually deployed
 
-The application writes uploaded files to a directory on disk (`UPLOAD_DIR`, see
-`src/lib/messages/storage.ts`). That single module is the whole of it — about forty
-lines, with no object-storage assumptions anywhere else in the codebase. But it means
-the host has to be chosen with it in mind, because a platform with an ephemeral
-filesystem would lose every attachment on each deploy, silently, while the database
-rows that reference them survive. Broken download links on last year's catering quote
-is a bad way to find this out.
+This section records the deployment as built, in November 2026. The reasoning that
+led here is below it.
 
-So there are two shapes of deployment, and the choice is between paying nothing and
-changing one file, or paying a few dollars and changing nothing.
+| | |
+|---|---|
+| Host | Vercel, Hobby plan, project `saip-board` |
+| Production URL | `https://saip-board-saip3.vercel.app` |
+| Database | Neon Postgres 18, free plan, via the Vercel marketplace |
+| Uploaded files | Vercel Blob, store `saip-board-files`, **private** access |
+| Region | `iad1` for both |
+| Cost | nothing |
 
-| | **A. Serverless** | **B. One small server** |
-|---|---|---|
-| Host | Vercel Hobby | Fly.io or Render |
-| Files | Cloudflare R2 (needs the storage swap) | a mounted disk, no code change |
-| Database | Neon | the host's Postgres, or Neon |
-| Cost | $0 | roughly $5–15 a month |
-| Sleeps? | no | no (not on a paid plan) |
+Everything is in one account with one bill of zero, which is the point.
 
-**Recommendation: A.** Not only because it is free, but because a recurring card
-payment is the single worst expense shape for a Princeton student group. The
-application itself refuses to record an out-of-pocket payment for a service — that is
-University policy, not a quirk — and a $7 monthly charge on a student's own card is
-exactly the thing that is awkward to get back through Concur, every month, forever,
-including the months after that student graduates. Free hosting is a governance
-decision here as much as a financial one.
+### Files: the decision that shaped the rest
 
-## Who should own the accounts
+The application writes uploaded files through `src/lib/messages/storage.ts`. On a
+server or a laptop that is a directory on disk. On Vercel the function filesystem is
+discarded after every request and every deploy, so attachment rows in Postgres would
+have outlived the bytes they point at — downloads quietly failing on last term's
+catering quote, with nothing in the logs to say why.
 
-Read this part before creating anything.
+That module now picks its backend from the environment: `UPLOAD_DIR` where there is a
+disk, a private Vercel Blob store where `BLOB_READ_WRITE_TOKEN` is set. Vercel Blob
+rather than the Cloudflare R2 this guide first recommended, because it needs no second
+vendor, no card, and `access: "private"` means a blob cannot be fetched without the
+store credentials the server holds. `/api/files/[attachmentId]` still refuses anyone
+who may not read the conversation before a byte moves.
 
-This application exists because institutional memory walks out of the door every May.
-The hosting accounts are subject to the same problem, and nothing in the software can
-fix it: a Vercel Hobby team has no collaborators, so whoever's login holds the project
-*is* the deployment. If that is a personal account, the next President inherits an
-application they cannot redeploy, repoint or rescue.
+Local development and the test suite are untouched by this and need no cloud account.
 
-**Create every account below under an address SAIP keeps, not a personal one.** A
-dedicated mailbox the board passes on — a `saip.board@gmail.com`, or better, whatever
-shared address ODUS or OIT will give the organisation — and put its credentials
-wherever the board already keeps shared secrets. The application keeps two
-administrators for exactly this reason; the infrastructure deserves the same care.
+### Two things that only break in production
 
-## Accounts to create
+Both of these worked perfectly on a laptop and failed, or would have failed, once
+deployed. They are recorded because they are the shape of problem that costs an
+afternoon.
 
-| Service | What for | Card needed? | Notes |
-|---|---|---|---|
-| **GitHub** | the code, and the free scheduled backup job | no | a private repository is fine |
-| **Vercel** | hosting | no | sign in with the GitHub account; Hobby plan |
-| **Neon** | PostgreSQL | no | free plan, no card |
-| **Cloudflare** | R2, for uploaded files | **probably** | sources conflict; see below |
-| Google Cloud | OAuth — **already done** | no | one change needed, see below |
+**The bundler traced the whole project through the upload path.** `UPLOAD_DIR` is read
+from the environment, so Turbopack cannot statically scope `path.resolve(UPLOAD_DIR,
+key)`, gives up, and pulls every file in the project into the serverless bundle.
+Locally that is a warning. On Vercel it failed the build outright while collecting
+page data for the download route. The path checks carry `turbopackIgnore` now; the
+traversal guard is unchanged in force and runs at request time regardless.
 
-Cloudflare is the one to expect friction from. Cloudflare's own R2 page advertises
-"no credit card required", while several recent third-party write-ups and user reports
-say the R2 dashboard asks for a card anyway, possibly only to verify identity. Find out
-early. If it does ask and the board would rather not, **Backblaze B2** is the usual
-substitute — S3-compatible, 10 GB free — and the storage module would be written the
-same way, since both speak the S3 API.
+**pdfkit reads its font metrics from disk.** It builds the path to its `.afm` files at
+runtime, and Next's output tracing follows imports rather than runtime paths, so those
+files never entered the function bundle. The handover PDF route would have returned
+500 in production while working on a laptop. `outputFileTracingIncludes` in
+`next.config.ts` names them explicitly.
 
-You do not need a domain. Vercel issues `something.vercel.app` with HTTPS, which is
-enough for everything including iOS installation and web push. A real address is nicer
-on a handover document, and `saip.princeton.edu` would have to come from OIT.
+### A setting that would have locked the board out
+
+New Vercel projects arrive with `ssoProtection` set to `all_except_custom_domains`:
+every `.vercel.app` URL demands a *Vercel* login with team access. SAIP's board have
+Princeton Google accounts, not Vercel accounts — they would have hit a wall before
+ever seeing the sign-in page. It is narrowed to `preview` only, so unfinished builds
+stay gated and production is reachable. The application's own authentication is what
+protects the data, and it is untouched.
+
+### Secrets
+
+Production holds a `BETTER_AUTH_SECRET` and a VAPID keypair generated for it, all
+distinct from the development values. `DEV_LOGIN` and `DEV_PRESIDENT_PASSWORD` are
+absent, and password sign-in is additionally hard-gated on `NODE_ENV`, so production
+refuses it even if someone sets the variable later.
+
+`scripts/push-env.sh` is how they got there: values stream from a local file straight
+into the Vercel CLI on stdin, so nothing echoes into a terminal scrollback, a shell
+history or a chat transcript. It refuses to send `DEV_*` keys to production, and
+refuses `DATABASE_URL` and the Postgres and Blob variables as well — those belong to
+the platform, and a local value is a Docker container on somebody's laptop.
+
+### Where the President account comes from
+
+The seed creates an *invitation*, not an account. The account itself is created the
+first time that address signs in with Google, which is what the access gate is for: a
+princeton.edu address grants nothing on its own, and only an invited one can get in.
+There is no password account in production at all.
+
+## The reasoning, and the alternative
 
 ## Free-tier figures worth knowing before you rely on them
 
