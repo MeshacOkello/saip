@@ -1,0 +1,98 @@
+# Weekly database backup to S3-compatible object storage.
+#
+# Neon's free restore window is six hours, which covers a migration you regret the
+# same morning and nothing else. This takes a copy the board keeps itself, in a
+# different system, so that losing the database account does not mean losing the
+# records.
+#
+# Needs five repository secrets:
+#   DATABASE_URL           the Neon connection string
+#   S3_ENDPOINT            e.g. https://<account>.r2.cloudflarestorage.com
+#   S3_BUCKET              the bucket holding attachments; dumps go under backups/
+#   S3_ACCESS_KEY_ID
+#   S3_SECRET_ACCESS_KEY
+#
+# Run it by hand once after setting them. A schedule nobody has ever seen succeed is
+# not a backup.
+name: Database backup
+
+on:
+  schedule:
+    # 04:00 UTC every Sunday — the quietest hour for a board that works evenings.
+    - cron: "0 4 * * 0"
+  workflow_dispatch:
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Install a matching PostgreSQL client
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] \
+            https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+
+      - name: Dump
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          test -n "$DATABASE_URL" || { echo "DATABASE_URL secret is not set"; exit 1; }
+          stamp=$(date -u +%Y-%m-%dT%H-%M-%SZ)
+          echo "stamp=$stamp" >> "$GITHUB_ENV"
+          # Custom format: compressed, and restorable table by table.
+          pg_dump --format=custom --no-owner --no-privileges \
+            --file="saip-$stamp.dump" "$DATABASE_URL"
+          ls -lh "saip-$stamp.dump"
+
+      - name: Refuse to upload an empty dump
+        run: |
+          size=$(stat -c%s "saip-${{ env.stamp }}.dump")
+          echo "dump is $size bytes"
+          # A real dump of this schema is tens of kilobytes even with no records in it.
+          test "$size" -gt 20000 || { echo "Dump is implausibly small; not uploading."; exit 1; }
+
+      - name: Upload
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+          AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+        run: |
+          aws s3 cp "saip-${{ env.stamp }}.dump" \
+            "s3://${{ secrets.S3_BUCKET }}/backups/saip-${{ env.stamp }}.dump" \
+            --endpoint-url "${{ secrets.S3_ENDPOINT }}"
+
+      - name: Keep the last twelve
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          aws s3 ls "s3://${{ secrets.S3_BUCKET }}/backups/" \
+            --endpoint-url "${{ secrets.S3_ENDPOINT }}" \
+            | awk '{print $4}' | grep '^saip-.*\.dump$' | sort \
+            | head -n -12 > old.txt || true
+          while read -r name; do
+            [ -n "$name" ] || continue
+            echo "removing $name"
+            aws s3 rm "s3://${{ secrets.S3_BUCKET }}/backups/$name" \
+              --endpoint-url "${{ secrets.S3_ENDPOINT }}"
+          done < old.txt
+
+      - name: Say what happened
+        run: |
+          echo "### Backup taken" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`saip-${{ env.stamp }}.dump\` uploaded to \`backups/\`." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Restore with: \`pg_restore --clean --no-owner -d \"\$TARGET_URL\" saip-….dump\`" >> "$GITHUB_STEP_SUMMARY"

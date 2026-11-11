@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Offline · SAIP Board</title>
+    <link rel="icon" href="/icons/icon-192.png" />
+    <style>
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: env(safe-area-inset-top) 1.5rem env(safe-area-inset-bottom);
+        background: #f6f7f3;
+        color: #18251f;
+        font: 400 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+      main { max-width: 26rem; text-align: center; }
+      img { width: 120px; height: auto; margin-bottom: 1.5rem; }
+      h1 { margin: 0 0 0.6rem; font-size: 1.4rem; letter-spacing: -0.02em; }
+      p { margin: 0 0 1.4rem; color: #56675e; }
+      button {
+        min-height: 44px;
+        padding: 0 1.25rem;
+        border: 0;
+        border-radius: 0.6rem;
+        background: #235941;
+        color: #fff;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button:hover { background: #173f2e; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/saip-logo.png" alt="SAIP" />
+      <h1>You are offline</h1>
+      <p>
+        SAIP needs a connection — the board's events, messages and finances are kept
+        on the server, never cached on this device.
+      </p>
+      <button type="button" onclick="location.reload()">Try again</button>
+    </main>
+  </body>
+</html>
