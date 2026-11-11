@@ -1,20 +1,27 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
-export function MessageFrame({ navigation, children }: { navigation: ReactNode; children: ReactNode }) {
+/**
+ * The two-column messaging workspace: conversations on the left, the open
+ * conversation filling everything else.
+ *
+ * On a narrow screen only one of the two is on screen at a time, the way a
+ * phone messaging app works — the list, then the conversation, with a back
+ * button. `message-selected` is what switches between them.
+ */
+export function MessageFrame({
+  list,
+  children,
+}: {
+  list: ReactNode;
+  children: ReactNode;
+}) {
   const selected = usePathname() !== "/messages";
   return (
-    <div className={`message-workspace ${selected ? "message-selected" : ""}`}>
-      <aside className="message-navigation">
-        <div className="flex items-center justify-between border-b border-line p-4">
-          <h2 className="font-semibold">Conversations</h2>
-          <Link href="/messages#new-message" className="text-sm font-medium text-primary">New</Link>
-        </div>
-        {navigation}
-      </aside>
+    <div className={`message-workspace${selected ? " message-selected" : ""}`}>
+      {list}
       <div className="message-main">{children}</div>
     </div>
   );

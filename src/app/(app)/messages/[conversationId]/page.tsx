@@ -2,8 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ActionForm } from "@/components/action-form";
+import { ChatComposer } from "@/components/chat-composer";
+import { ChatScroll } from "@/components/chat-scroll";
 import { IconArrowLeft, IconChat, IconPaperclip } from "@/components/icons";
-import { Avatar, Badge, EmptyState, Field, Select } from "@/components/ui";
+import { Avatar, EmptyState, Field, Select } from "@/components/ui";
 import { assignableMembers } from "@/lib/board";
 import {
   addToConversationAction,
@@ -69,6 +71,10 @@ export default async function ConversationPage({
   // In a direct message there is only one other person; labelling every bubble
   // with their name says nothing the page has not already said.
   const named = item.type !== "direct";
+  const other =
+    item.type === "direct"
+      ? item.people.find((p) => p.userId !== member.userId)
+      : undefined;
 
   // Group by day, then collapse runs from the same author within ten minutes.
   const days: { key: string; date: Date; messages: typeof item.messages }[] = [];
@@ -82,44 +88,49 @@ export default async function ConversationPage({
   return (
     <div className="chat">
       <header className="chat-header">
-        <Link
-          href="/messages"
-          className="chat-back"
-          aria-label="Back to conversations"
-        >
-          <IconArrowLeft className="size-4" />
+        <Link href="/messages" className="chat-back" aria-label="Back to chats">
+          <IconArrowLeft className="size-[18px]" />
         </Link>
+
+        {item.type === "direct" ? (
+          <Avatar
+            name={other?.name ?? item.title}
+            size={38}
+            src={avatarSrc({ userId: other?.userId, image: other?.image })}
+          />
+        ) : (
+          <span className="chat-room" aria-hidden>
+            {item.type === "channel" ? "#" : "\u25ce"}
+          </span>
+        )}
+
         <div className="min-w-0">
-          <h1 className="chat-title">
-            {item.type === "channel" ? "# " : null}
-            {item.title}
-          </h1>
+          <h1 className="chat-title">{item.title}</h1>
           <p className="chat-sub">
-            {item.type === "channel"
-              ? "Channel · open to the whole board"
-              : item.type === "group"
-                ? `Private group · ${item.people.length} people`
-                : "Direct message"}
+            {item.type === "direct"
+              ? "Direct message"
+              : item.people.map((p) => p.name.split(" ")[0]).join(", ")}
           </p>
         </div>
-        <div className="ml-auto flex shrink-0 items-center gap-2">
-          <span className="badge-hide-sm">
-            <Badge tone={item.isPrivate ? "neutral" : "secondary"}>
+
+        <details className="menu chat-menu">
+          <summary aria-label="Conversation details">Details</summary>
+          <div className="menu-panel">
+            <p className="menu-heading">
               {item.isPrivate ? "Private" : "Open to the board"}
-            </Badge>
-          </span>
-          <details className="menu">
-            <summary>Details</summary>
-            <div className="menu-panel">
-              <p className="menu-heading">In this conversation</p>
-              <ul className="menu-people">
-                {item.people.map((p) => (
-                  <li key={p.userId}>
-                    <Avatar name={p.name} size={24} />
-                    {p.name}
-                  </li>
-                ))}
-              </ul>
+            </p>
+            <ul className="menu-people">
+              {item.people.map((p) => (
+                <li key={p.userId}>
+                  <Avatar
+                    name={p.name}
+                    size={24}
+                    src={avatarSrc({ userId: p.userId, image: p.image })}
+                  />
+                  {p.name}
+                </li>
+              ))}
+            </ul>
               {canAdd ? (
                 <>
                   <div className="menu-divider" />
@@ -163,12 +174,11 @@ export default async function ConversationPage({
                   />
                 </>
               ) : null}
-            </div>
-          </details>
-        </div>
+          </div>
+        </details>
       </header>
 
-      <div className="chat-scroll">
+      <ChatScroll count={item.messages.length}>
         {item.messages.length === 0 ? (
           <EmptyState icon={<IconChat />} title="No messages yet">
             {item.type === "channel"
@@ -273,30 +283,14 @@ export default async function ConversationPage({
             </section>
           ))
         )}
-      </div>
+      </ChatScroll>
 
-      <div className="chat-composer">
-        <ActionForm
-          action={sendMessageAction}
-          submitLabel="Send"
-          size="sm"
-          hidden={{ conversationId: item.id }}
-        >
-          <textarea
-            name="body"
-            rows={2}
-            placeholder={`Message ${item.title}…`}
-            className="composer-input"
-            aria-label="Message"
-          />
-          <label className="composer-attach">
-            <input type="file" name="files" multiple aria-label="Attach files" />
-            <span className="composer-hint">
-              Attach a file — up to {MAX_UPLOAD_BYTES / 1024 / 1024} MB
-            </span>
-          </label>
-        </ActionForm>
-      </div>
+      <ChatComposer
+        conversationId={item.id}
+        action={sendMessageAction}
+        placeholder="Type a message"
+        maxBytes={MAX_UPLOAD_BYTES}
+      />
     </div>
   );
 }

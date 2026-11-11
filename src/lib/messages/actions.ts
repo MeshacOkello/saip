@@ -64,7 +64,8 @@ export async function sendMessageAction(_p: ActionState, f: FormData) {
       body: str(f, "body"),
       attachments: stored,
     });
-  });
+    // The composer clears itself on this, so it has to mean "it went".
+  }, "sent");
 }
 
 export async function openDirectAction(_p: ActionState, f: FormData) {

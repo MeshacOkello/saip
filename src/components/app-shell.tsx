@@ -139,6 +139,11 @@ export function AppShell({
   const [signOutError, setSignOutError] = useState(false);
 
   const attentionCount = attention.unseen + attention.overdue.length;
+  // Messaging runs full height instead of scrolling inside the page, and an
+  // open conversation takes the whole screen on a phone: the tab bar would sit
+  // directly under the composer and catch the thumb aiming for Send.
+  const immersive = pathname.startsWith("/messages");
+  const inConversation = /^\/messages\/[^/]+$/.test(pathname);
 
   // Close the header menus when the route changes, and when a click lands outside.
   useEffect(() => {
@@ -250,7 +255,7 @@ export function AppShell({
         {identity}
       </aside>
 
-      <div className="min-w-0 flex-1">
+      <div className={`min-w-0 flex-1${immersive ? " app-immersive" : ""}`}>
         <header className="app-bar">
           <div className="flex min-w-0 flex-1 items-center gap-2.5">
             <span className="truncate font-semibold text-ink">
@@ -390,7 +395,10 @@ export function AppShell({
           {children}
         </main>
 
-        <nav className="tab-bar" aria-label="Main sections">
+        <nav
+          className={`tab-bar${inConversation ? " is-hidden" : ""}`}
+          aria-label="Main sections"
+        >
           {items
             .filter((item) => TAB_BAR.includes(item.href))
             .sort((a, b) => TAB_BAR.indexOf(a.href) - TAB_BAR.indexOf(b.href))

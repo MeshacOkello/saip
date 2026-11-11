@@ -12,6 +12,6 @@ export default async function MessagesLayout({
   const rows = await inbox(member);
 
   return (
-    <MessageFrame navigation={<ConversationList rows={rows} />}>{children}</MessageFrame>
+    <MessageFrame list={<ConversationList rows={rows} />}>{children}</MessageFrame>
   );
 }
