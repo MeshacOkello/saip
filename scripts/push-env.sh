@@ -19,7 +19,17 @@ set -euo pipefail
 FILE="${1:?usage: scripts/push-env.sh <env-file> [environment]}"
 ENVIRONMENT="${2:-production}"
 
-SKIP="DEV_LOGIN DEV_PRESIDENT_PASSWORD UPLOAD_DIR SEED_PRESIDENT_EMAIL BETTER_AUTH_URL"
+# Never push these. DEV_* and UPLOAD_DIR are development conveniences. The database
+# and storage variables are owned by the platform — Neon and Blob write them when the
+# store is connected, and a local value here is the Docker container on somebody's
+# laptop. Sending that to production would point the live application at a database
+# that does not exist, which is the kind of mistake that looks like a deploy failure
+# and is actually data loss waiting to happen.
+SKIP="DEV_LOGIN DEV_PRESIDENT_PASSWORD UPLOAD_DIR SEED_PRESIDENT_EMAIL BETTER_AUTH_URL
+DATABASE_URL DATABASE_URL_UNPOOLED BLOB_READ_WRITE_TOKEN BLOB_STORE_ID
+POSTGRES_URL POSTGRES_URL_NON_POOLING POSTGRES_PRISMA_URL POSTGRES_URL_NO_SSL
+POSTGRES_HOST POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DATABASE
+PGHOST PGHOST_UNPOOLED PGUSER PGPASSWORD PGDATABASE NEON_PROJECT_ID"
 
 [ -f "$FILE" ] || { echo "No such file: $FILE" >&2; exit 1; }
 
