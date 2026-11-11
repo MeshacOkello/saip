@@ -107,10 +107,25 @@ export async function screenSignIn(
   return null;
 }
 
+/**
+ * Where this instance believes it lives. Better Auth builds the OAuth redirect from
+ * it, so a wrong value shows up as a Google error rather than a broken page.
+ *
+ * `VERCEL_PROJECT_PRODUCTION_URL` is injected by Vercel and always names the real
+ * production domain, which means a deployment is correct before anybody has set
+ * anything. BETTER_AUTH_URL still wins when present, for a custom domain or a
+ * laptop.
+ */
+export const resolvedBaseURL =
+  process.env.BETTER_AUTH_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "http://localhost:3000");
+
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg", schema }),
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
+  baseURL: resolvedBaseURL,
 
   emailAndPassword: { enabled: devLoginEnabled },
 
