@@ -201,7 +201,7 @@ export default async function NotificationsPage({
           </Section>
 
           {browsers.length > 0 ? (
-            <Section title={`Registered browsers · ${browsers.length}`}>
+            <Section title={`Devices · ${browsers.length}`}>
               <Surface padded={false}>
                 <ul className="ledger">
                   {browsers.map((b) => (
@@ -211,9 +211,9 @@ export default async function NotificationsPage({
                           {browserName(b.userAgent)}
                         </span>
                         <span className="ledger-sub">
-                          added {b.createdAt.toISOString().slice(0, 10)}
+                          since {b.createdAt.toISOString().slice(0, 10)}
                           {b.lastUsedAt
-                            ? ` · last pushed ${b.lastUsedAt.toISOString().slice(0, 10)}`
+                            ? ` · last used ${b.lastUsedAt.toISOString().slice(0, 10)}`
                             : " · never pushed"}
                           {b.failedAt ? " · failing" : ""}
                         </span>
