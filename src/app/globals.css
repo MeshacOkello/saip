@@ -1785,11 +1785,16 @@ html:has(.form-dialog[open]) { overflow: hidden; }
   line-height: 1.05rem;
   text-align: center;
 }
+/* Beats `.menu > summary`, which is more specific than a lone class and was
+   handing the avatar a border, a square radius and side padding. */
+.menu > summary.bar-avatar,
 .bar-avatar {
   display: inline-grid;
+  width: 2.25rem;
+  height: 2.25rem;
   place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  padding: 0;
+  border: 0;
   border-radius: 999px;
   cursor: pointer;
   list-style: none;

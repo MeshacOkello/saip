@@ -338,6 +338,17 @@ export function Avatar({
   /** A picture, if the person has one. Initials stand in when they do not. */
   src?: string | null;
 }) {
+  // The shape is set inline rather than by a class so that no rule further up
+  // can reshape a face. The account menu learned this the hard way: a summary
+  // rule gave it a border, a 0.5rem radius and side padding, and the circle
+  // came out a bordered rounded rectangle with white space down both sides.
+  const shape = {
+    width: size,
+    height: size,
+    borderRadius: "50%",
+    flexShrink: 0,
+  } as const;
+
   if (src) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
@@ -349,8 +360,8 @@ export function Avatar({
         height={size}
         loading="lazy"
         decoding="async"
-        style={{ width: size, height: size }}
-        className="inline-block shrink-0 rounded-full bg-surface-2 object-cover"
+        style={{ ...shape, objectFit: "cover", border: 0, padding: 0 }}
+        className="inline-block bg-surface-2"
       />
     );
   }
@@ -363,8 +374,14 @@ export function Avatar({
   return (
     <span
       aria-hidden
-      style={{ width: size, height: size, fontSize: Math.round(size * 0.38) }}
-      className="inline-flex shrink-0 items-center justify-center rounded-full bg-primary-wash font-semibold text-primary"
+      style={{
+        ...shape,
+        fontSize: Math.round(size * 0.38),
+        lineHeight: 1,
+        border: 0,
+        padding: 0,
+      }}
+      className="inline-flex items-center justify-center bg-primary-wash font-semibold text-primary"
     >
       {initials}
     </span>
